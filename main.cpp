@@ -1,8 +1,16 @@
 #include <iostream>
 #include <fstream>
 
-void viewArr(bool** arr, int* rows, int* cols)
+void viewGame(
+		bool** arr,
+		int* rows, 
+		int* cols,
+		int* gen,
+		int* alive
+)
 {
+	++*gen;
+
   std::cout << std::endl;
 
   for (int i = 0; i < *rows; ++i)
@@ -11,6 +19,8 @@ void viewArr(bool** arr, int* rows, int* cols)
 		{
 			char s = arr[i][j] ? '*' : '-';
 
+			*alive = arr[i][j] ? (++*alive) : *alive;
+
 			std::cout << s << " ";
 		}
 
@@ -18,6 +28,10 @@ void viewArr(bool** arr, int* rows, int* cols)
 	}
   
   std::cout << std::endl;
+  std::cout << "Поколкние: " << *gen << "; " << 
+		"Количество живых клеток: " << *alive << std::endl;
+
+	alive = 0;
 }
 
 int main() {
@@ -25,6 +39,8 @@ int main() {
     "Не удалось прочитать файл, проерьте его наличие и праава доступа: ",
   };
 	const char* path = { "./in.txt" };
+	int gen = 0;
+	int alive = 0;
 
 	std::ifstream fin (path);
 
@@ -60,7 +76,7 @@ int main() {
     arr_back[i][j] = true;
   }
   
-	viewArr(arr_back, &rows_size, &cols_size);
+	viewGame(arr_back, &rows_size, &cols_size, &gen, &alive);
 
   return 0;
 }
