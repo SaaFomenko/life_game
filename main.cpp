@@ -3,7 +3,7 @@
 
 bool** createArr(int* rows, int* cols)
 {
-  	bool** arr = new bool*[*rows];
+  bool** arr = new bool*[*rows];
 	
 	for (int i = 0; i < *rows; ++i)
 	{
@@ -27,18 +27,13 @@ void viewGame(
 		bool** arr,
 		int* rows, 
 		int* cols
-  //  int* status
-	//	int* gen,
-	//	int* alive
 )
 {
-	//++*gen;
-	
 	const std::string msg[] = {
 		"Клетки продолжают развиваться!",
 		"Клетки не меняют состояния.",
 		"Все клетки умерли.",
-		"Игра окончена."
+		"Игра окончена.",
 	};
 
 	std::string final_msg = "";
@@ -47,7 +42,7 @@ void viewGame(
   int alive = 0;
 	int status = 1;
 
-  bool** next_arr = createArr(*rows, *cols);
+  bool** next_arr = createArr(&*rows, &*cols);
 
   ++gen;
   
@@ -80,19 +75,13 @@ void viewGame(
 
 	deleteArr(next_arr, &*rows);
 	next_arr = nullptr;
-	//alive = 0;
 }
-
-//int deadOfLife()
 
 int main() {
   const std::string msg[] = {
     "Не удалось прочитать файл, проерьте его наличие и праава доступа: ",
   };
 	const char* path = { "./in.txt" };
-  int status = 0;
-//  int gen = 0;
-//	int alive = 0;
 
 	std::ifstream fin (path);
 
@@ -118,13 +107,13 @@ int main() {
   ) {
     fin >> i;
     fin >> j;
-    arr_back[i][j] = true;
+    arr[i][j] = true;
   }
 
   viewGame(arr, &rows_size, &cols_size);
 
 	deleteArr(arr, &rows_size);
-	next_arr = nullptr;
+	arr = nullptr;
 
   return 0;
 }
