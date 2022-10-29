@@ -1,46 +1,16 @@
 #include <iostream>
 #include <fstream>
 
-bool** createArr(int* rows, int* cols)
-{
-  	bool** arr = new bool*[*rows];
-	
-	for (int i = 0; i < *rows; ++i)
-	{
-		arr[i] = new bool[*cols];
-	}
-
-  return arr;
-}
-
-void deleteArr(bool** arr, int* rows)
-{
-  for (int i = 0; i < *rows; ++i)
-	{
-		delete[] arr[i];
-	}
-  
-  delete[] arr;
-}
-
 void viewGame(
 		bool** arr,
 		int* rows, 
-		int* cols
-  //  int* status
-	//	int* gen,
-	//	int* alive
+		int* cols,
+		int* gen,
+		int* alive
 )
 {
-	//++*gen;
-  
-  static int gen = 0;
-  int alive = 0;
+	++*gen;
 
-  bool** next_arr = createArr(*rows, *cols);
-
-  ++gen;
-  
   std::cout << std::endl;
 
   for (int i = 0; i < *rows; ++i)
@@ -49,7 +19,7 @@ void viewGame(
 		{
 			char s = arr[i][j] ? '*' : '-';
 
-			alive = arr[i][j] ? (++alive) : alive;
+			*alive = arr[i][j] ? (++*alive) : *alive;
 
 			std::cout << s << " ";
 		}
@@ -58,22 +28,19 @@ void viewGame(
 	}
   
   std::cout << std::endl;
-  std::cout << "Поколкние: " << gen << "; " << 
-		"Количество живых клеток: " << alive << std::endl;
+  std::cout << "Поколкние: " << *gen << "; " << 
+		"Количество живых клеток: " << *alive << std::endl;
 
-	//alive = 0;
+	alive = 0;
 }
-
-//int deadOfLife()
 
 int main() {
   const std::string msg[] = {
     "Не удалось прочитать файл, проерьте его наличие и праава доступа: ",
   };
 	const char* path = { "./in.txt" };
-  int status = 0;
-//  int gen = 0;
-//	int alive = 0;
+	int gen = 0;
+	int alive = 0;
 
 	std::ifstream fin (path);
 
@@ -90,8 +57,15 @@ int main() {
 	fin >> rows_size;
 	fin >> cols_size;
 
-	bool** arr = createArr(&rows_size, &cols_size);
+	bool** arr_back = new bool*[rows_size];
+	
+	for (int i = 0; i < rows_size; ++i)
+	{
+		arr_back[i] = new bool[cols_size];
+//		std::cout << arr_back[i][i] << std::endl;
+	}
 
+  
   for (
     int i = 0,
     j = 0;
@@ -101,8 +75,8 @@ int main() {
     fin >> j;
     arr_back[i][j] = true;
   }
-
-  viewGame(arr, &rows_size, &cols_size);
+  
+	viewGame(arr_back, &rows_size, &cols_size, &gen, &alive);
 
   return 0;
 }
