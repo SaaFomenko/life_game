@@ -33,9 +33,19 @@ void viewGame(
 )
 {
 	//++*gen;
+	
+	const std::string msg[] = {
+		"Клетки продолжают развиваться!",
+		"Клетки не меняют состояния.",
+		"Все клетки умерли.",
+		"Игра окончена."
+	};
+
+	std::string final_msg = "";
   
   static int gen = 0;
   int alive = 0;
+	int status = 1;
 
   bool** next_arr = createArr(*rows, *cols);
 
@@ -61,6 +71,15 @@ void viewGame(
   std::cout << "Поколкние: " << gen << "; " << 
 		"Количество живых клеток: " << alive << std::endl;
 
+	if (status == 0)
+	{
+		viewGame(next_arr, &*rows, &*cols);
+	}
+
+  std::cout << final_msg << std::endl;
+
+	deleteArr(next_arr, &*rows);
+	next_arr = nullptr;
 	//alive = 0;
 }
 
@@ -103,6 +122,9 @@ int main() {
   }
 
   viewGame(arr, &rows_size, &cols_size);
+
+	deleteArr(arr, &rows_size);
+	next_arr = nullptr;
 
   return 0;
 }
