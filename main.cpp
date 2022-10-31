@@ -56,6 +56,26 @@ void viewGame(
 
 			alive = arr[i][j] ? (++alive) : alive;
 
+			if (arr[i][i])
+			{
+				if (i == 0 && j == 0)
+				{
+					next_arr[i][j] = arr[i][j + 1] && (arr[i + 1][j] || arr[i + 1][j + 1] );
+					if (!next_arr)
+					{
+						status = 2;
+					}
+				}
+			}
+			else
+			{
+				next_arr[i][j] = arr[i][j + 1] && arr[i + 1][j] && arr[i + 1][j + 1];
+			  if (next_arr)
+				{
+					status = 0
+				}	
+			}
+
 			std::cout << s << " ";
 		}
 
