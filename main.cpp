@@ -31,8 +31,8 @@ void viewGame(
 {
 	const std::string msg[] = {
 		"Клетки продолжают жить!",
-		"Клетки не меняют состояния.",
-		"Все клетки умерли.",
+		"Клетки не меняют состояния. ",
+		"Все клетки умерли. ",
 		"Игра окончена.",
 	};
 
@@ -61,6 +61,7 @@ void viewGame(
 				if (arr[i][j])
 				{
 					next_arr[i][j] = arr[i][j + 1] && (arr[i + 1][j] || arr[i + 1][j + 1] );
+					alive = next_arr[i][j] ? alive : --alive;
 				}
 				else
 				{
@@ -70,17 +71,14 @@ void viewGame(
 				status = next_arr[i][i] == arr[i][j] ? 1 : 0;
 			}
 
-
-			else
+			if (i == 0 && j > 0)
 			{
-			  if (next_arr)
+				if (arr[i][j])
 				{
-					status = 0
-				}	
+					next_arr[i][j] = arr[i][j - 1] ||
+				}
 			}
 
-			std::cout << s << " ";
-		}
 
 		std::cout << std::endl;
 	}
@@ -89,12 +87,13 @@ void viewGame(
   std::cout << "Поколкние: " << gen << "; " << 
 		"Количество живых клеток: " << alive << std::endl;
 
-	if (status == 0)
+	if (status == 0 && alive != 0)
 	{
+		std::cout << msg[status] << std::endl;
 		viewGame(next_arr, &*rows, &*cols);
 	}
 
-  std::cout << final_msg << std::endl;
+  std::cout << msg[status] << msg[3] << std::endl;
 
 	deleteArr(next_arr, &*rows);
 	next_arr = nullptr;
