@@ -60,7 +60,13 @@ void viewGame(
 			{
 				if (arr[i][j])
 				{
-					next_arr[i][j] = arr[i][j + 1] && (arr[i + 1][j] || arr[i + 1][j + 1] );
+//					next_arr[i][j] = arr[i][j + 1] && (arr[i + 1][j] || arr[i + 1][j + 1] );
+					int nears = static_cast<int>(arr[i][j + 1])
+										+	static_cast<int>(arr[i + 1][j])				
+										+	static_cast<int>(arr[i + 1][j + 1]);
+
+					next_arr[i][j] = nears > 1;
+
 					alive = next_arr[i][j] ? alive : --alive;
 				}
 				else
