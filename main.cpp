@@ -23,10 +23,108 @@ void deleteArr(bool** arr, int* rows)
   delete[] arr;
 }
 
+int deadOrLife(
+	bool** arr,
+	bool** next_arr,
+	int* i,
+	int* j,
+	int* alive,
+	int* nears
+)
+{
+	if (arr[*i][*j])
+	{
+		next_arr[*i][*j] = *nears > 1;
+
+		*alive = next_arr[*i][*j] ? *alive : --*alive;
+	}
+	else
+	{
+		next_arr[*i][*j] = *nears == 3;
+	}
+
+	const int status = next_arr[*i][*i] == arr[*i][*j] ? 1 : 0;
+	return status;
+}
+
+void lifeOnPoint(
+	bool** arr,
+	bool** next_arr,
+	const int* cols,
+	const int* rows,
+	const int* i,
+	const int* j,
+	int* alive,
+	int* status
+)
+{
+	bool check_position[] = {
+		(*i > 0 && i < (*rows - 1)) && (*j > 0 && *j < (*cols -1)),
+		// top left corner
+		*i == 0 && *j == 0,
+		// top line
+		*i == 0 && *j > 0 && *j < (*cols - 1),
+		// left line
+		*i > 0 && i* < (*rows - 1) && *j == 0,
+		// bottom left corner
+		*i == (*rows - 1) && *j == 0,
+		// bottom line
+		*i == (*rows -1) && *j > 0 && *j < (*cols - 1),
+		// top right corner
+		*i == 0 && *j == (*cols - 1),
+		// right line
+		*i > 0 && *i < (*rows - 1) && *j == (*cols - 1),
+		// bottom right corner
+		*i == (*rows - 1) && *j == (*cols - 1),
+	};
+
+	// Nears in left top corner
+	int top_left = static_cast<int>(arr[*i][*j + 1]) +
+		static_cast<int>(arr[*i + 1][*j])	+
+		static_cast<int>(arr[*i + 1][*j + 1]);
+
+	int bottom_left = static_cast<int>(arr[*i - 1][*j]) +
+		static_cast<int>(arr[*i - 1][*j + 1])	+
+		static_cast<int>(arr[*i][*j + 1]);
+
+	int top_right = static_cast<int>(arr[*i][*j - 1]) +
+		static_cast<int>(arr[*i + 1][*j])	+
+		static_cast<int>(arr[*i + 1][*j - 1]);
+
+	int nears_in_poin[]  = {
+		top_left +
+			static_cast<int>(arr[*i][*j - 1]) +
+				static_cast<int>(arr[*i + 1][*j - 1]) +
+					static_cast<int>(arr[*i - 1][*j - 1]) +
+						static_cast<int>(arr[*i - 1][*j]) +
+							static_cast<int>(arr[*i - 1][*j + 1]),
+		top_left,
+		top_left +
+			static_cast<int>(arr[*i][*j - 1]) +
+				static_cast<int>(arr[*i + 1][*j - 1]),
+		top_left +
+			static_cast<int>(arr[*i - 1][*j]) +
+				static_cast<int>(arr[*i - 1][*j + 1]),
+		bottom_left,
+		bottom_left +
+			static_cast<int>(arr[*i][*j - 1]) +
+				static_cast<int>(arr[*i - 1][*j + 1]),
+		top_right,
+		top_right +
+			static_cast<int>(arr[*i - 1][*j - 1]) +
+				static_cast<int>(arr[*i - 1][*j]),
+		static_cast<int>(arr[*i - 1][*j - 1]) +
+			static_cast<int>(arr[*i - 1][*j]) +
+				static_cast<int>(arr[*i][*j - 1]),
+	};
+
+	status = deadOrLife(arr, next_arr, &i, &j, &alive, &nears);
+}
+
 void viewGame(
-		bool** arr,
-		int* rows, 
-		int* cols
+	bool** arr,
+	int* rows, 
+	int* cols
 )
 {
 	const std::string msg[] = {
@@ -54,35 +152,14 @@ void viewGame(
 		{
 			char s = arr[i][j] ? '*' : '-';
 
-			alive = arr[i][j] ? (++alive) : alive;
 			
-			if (i == 0 && j == 0)
+			if (i == 0 && j == (*cols - 1))
 			{
-				if (arr[i][j])
-				{
-//					next_arr[i][j] = arr[i][j + 1] && (arr[i + 1][j] || arr[i + 1][j + 1] );
-					int nears = static_cast<int>(arr[i][j + 1])
-										+	static_cast<int>(arr[i + 1][j])				
-										+	static_cast<int>(arr[i + 1][j + 1]);
+				nears = static_cast<int>(arr[i][j - 1])
+							+	static_cast<int>(arr[i + 1][j - 1])				
+							+	static_cast<int>(arr[i + 1][j]);
 
-					next_arr[i][j] = nears > 1;
-
-					alive = next_arr[i][j] ? alive : --alive;
-				}
-				else
-				{
-					next_arr[i][j] = arr[i][j + 1] && arr[i + 1][j] && arr[i + 1][j + 1];
-				}
-
-				status = next_arr[i][i] == arr[i][j] ? 1 : 0;
-			}
-
-			if (i == 0 && j > 0)
-			{
-				if (arr[i][j])
-				{
-					next_arr[i][j] = arr[i][j - 1] ||
-				}
+				status = deadOrLife(arr, next_arr, &i, &j, &alive, &nears);
 			}
 
 
