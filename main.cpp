@@ -1,227 +1,157 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <cstdlib>
+#include <unistd.h>
 
-bool** createArr(int* rows, int* cols)
-{
-  bool** arr = new bool*[*rows];
-	
-	for (int i = 0; i < *rows; ++i)
-	{
-		arr[i] = new bool[*cols];
-	}
+
+bool **createArr(int *rows, int *cols) {
+  bool **arr = new bool *[*rows];
+
+  for (int i = 0; i < *rows; ++i) {
+    arr[i] = new bool[*cols];
+  }
 
   return arr;
 }
 
-void deleteArr(bool** arr, int* rows)
-{
-  for (int i = 0; i < *rows; ++i)
-	{
-		delete[] arr[i];
-	}
-  
+void deleteArr(bool **arr, int *rows) {
+  for (int i = 0; i < *rows; ++i) {
+    delete[] arr[i];
+  }
+
   delete[] arr;
 }
 
-int deadOrLife(
-	bool** arr,
-	bool** next_arr,
-	const int* i,
-	const int* j,
-	int* alive,
-	int* nears
-)
-{
-	if (arr[*i][*j])
-	{
-		next_arr[*i][*j] = *nears > 1;
+void deadOrLife(bool **arr, bool **next_arr, const int *i, const int *j,
+               int *alive, int *nears) {
+  if (arr[*i][*j]) {
+    next_arr[*i][*j] = *nears > 1 && *nears < 4;
 
-		*alive = next_arr[*i][*j] ? *alive : --*alive;
-	}
-	else
-	{
-		next_arr[*i][*j] = *nears == 3;
-	}
-
-	const int status = next_arr[*i][*i] == arr[*i][*j] ? 1 : 0;
-	return status;
+  } else {
+    next_arr[*i][*j] = *nears == 3;
+  }
 }
 
-void lifeOnPoint(
-	bool** arr,
-	bool** next_arr,
-	const int* cols,
-	const int* rows,
-	const int* i,
-	const int* j,
-	int* alive,
-	int* status
-)
-{
-	int nears = 0;
-	bool check_position[] = {
-		(*i > 0 && *i < *rows - 1) && (*j > 0 && *j < *cols - 1),
-		// top left corner
-		*i == 0 && *j == 0,
-		// top line
-		*i == 0 && *j > 0 && *j < (*cols - 1),
-		// left line
-		*i > 0 && *i < (*rows - 1) && *j == 0,
-		// bottom left corner
-		*i == (*rows - 1) && *j == 0,
-		// bottom line
-		*i == (*rows -1) && *j > 0 && *j < (*cols - 1),
-		// top right corner
-		*i == 0 && *j == (*cols - 1),
-		// right line
-		*i > 0 && *i < (*rows - 1) && *j == (*cols - 1),
-		// bottom right corner
-		*i == (*rows - 1) && *j == (*cols - 1),
-	};
-
-	// Nears in left top corner
-	int top_left = static_cast<int>(arr[*i][*j + 1]) +
-		static_cast<int>(arr[*i + 1][*j])	+
-		static_cast<int>(arr[*i + 1][*j + 1]);
-
-	int bottom_left = static_cast<int>(arr[*i - 1][*j]) +
-		static_cast<int>(arr[*i - 1][*j + 1])	+
-		static_cast<int>(arr[*i][*j + 1]);
-
-	int top_right = static_cast<int>(arr[*i][*j - 1]) +
-		static_cast<int>(arr[*i + 1][*j])	+
-		static_cast<int>(arr[*i + 1][*j - 1]);
-
-	int nears_in_poin[]  = {
-		top_left +
-			static_cast<int>(arr[*i][*j - 1]) +
-				static_cast<int>(arr[*i + 1][*j - 1]) +
-					static_cast<int>(arr[*i - 1][*j - 1]) +
-						static_cast<int>(arr[*i - 1][*j]) +
-							static_cast<int>(arr[*i - 1][*j + 1]),
-		top_left,
-		top_left +
-			static_cast<int>(arr[*i][*j - 1]) +
-				static_cast<int>(arr[*i + 1][*j - 1]),
-		top_left +
-			static_cast<int>(arr[*i - 1][*j]) +
-				static_cast<int>(arr[*i - 1][*j + 1]),
-		bottom_left,
-		bottom_left +
-			static_cast<int>(arr[*i][*j - 1]) +
-				static_cast<int>(arr[*i - 1][*j + 1]),
-		top_right,
-		top_right +
-			static_cast<int>(arr[*i - 1][*j - 1]) +
-				static_cast<int>(arr[*i - 1][*j]),
-		static_cast<int>(arr[*i - 1][*j - 1]) +
-			static_cast<int>(arr[*i - 1][*j]) +
-				static_cast<int>(arr[*i][*j - 1]),
-	};
-
-	const int size = sizeof(check_position)/sizeof(check_position[0]);
-
-	for (int i = 0; i < size; ++i)
-	{
-		if (check_position[i])
-		{
-			nears = nears_in_poin[i];
-		}
-	}
-
-	*status = deadOrLife(arr, next_arr, i, j, alive, &nears);
-}
-
-void viewGame(
-	bool** arr,
-	int* rows, 
-	int* cols
-)
-{
-	const std::string msg[] = {
-		"Клетки продолжают жить!",
-		"Клетки не меняют состояния. ",
-		"Все клетки умерли. ",
-		"Игра окончена.",
-	};
-
-	std::string final_msg = "";
+void lifeOnPoint(bool **arr, bool **next_arr, const int *cols, const int *rows,
+                 const int *i, const int *j, int *alive) {
+  int nears = 0;
+  int position_nears[][2] = {
+    *i - 1, *j - 1,
+    *i - 1, *j,
+    *i - 1, *j + 1,
+    *i, *j - 1,
+    *i, *j + 1,
+    *i + 1, *j - 1,
+    *i + 1, *j,
+    *i + 1, *j + 1,
+  };
   
+  const int size_row = sizeof(position_nears) / sizeof(position_nears[0]);
+
+  for (int x = 0; x < size_row; ++x) {
+    bool check = position_nears[x][0] >= 0 &&
+                 position_nears[x][0] < *rows &&
+                 position_nears[x][1] >= 0 &&
+                 position_nears[x][0] < *cols;
+    
+    if (check) {
+      nears += static_cast<int>(arr[position_nears[x][0]][position_nears[x][1]]);
+    }
+  }
+  
+  *alive = arr[*i][*j] ? (++*alive) : *alive;
+  deadOrLife(arr, next_arr, i, j, alive, &nears);
+}
+
+std::string viewGame(bool **arr, int *rows, int *cols) {
+  const std::string msg[] = {
+      "Клетки продолжают жить!",
+      "Клетки не меняют состояния. ",
+      "Все клетки умерли. ",
+      "Игра окончена.",
+  };
   static int gen = 0;
   int alive = 0;
-	int status = 1;
+  int status = 1;
+  static int pre_alive = 0;
 
-  bool** next_arr = createArr(&*rows, &*cols);
+  bool **next_arr = createArr(rows, cols);
 
   ++gen;
-  
+
   std::cout << std::endl;
 
-  for (int i = 0; i < *rows; ++i)
-	{
-		for (int j = 0; j < *cols; ++j)
-		{
-			char s = arr[i][j] ? '*' : '-';
+  for (int i = 0; i < *rows; ++i) {
+    for (int j = 0; j < *cols; ++j) {
+      char s = arr[i][j] ? '*' : '-';
 
-			lifeOnPoint(arr, next_arr, rows, cols, &i, &j, &alive, &status);
-		}			
+      std::cout << s << " ";
+      
+      lifeOnPoint(arr, next_arr, rows, cols, &i, &j, &alive);
+    }
 
-		std::cout << std::endl;
-	}
-  
+    std::cout << std::endl;
+  }
+
   std::cout << std::endl;
-  std::cout << "Поколкние: " << gen << "; " << 
-		"Количество живых клеток: " << alive << std::endl;
+  std::cout << "Поколкние: " << gen << "; "
+            << "Количество живых клеток: " << alive << std::endl;
 
-	if (status == 0 && alive != 0)
-	{
-		std::cout << msg[status] << std::endl;
-		viewGame(next_arr, &*rows, &*cols);
-	}
+  status = alive == 0 ? 2 : pre_alive == alive ? 1 : 0;
+ 
+  std::cout << msg[status];
 
-  std::cout << msg[status] << msg[3] << std::endl;
+  if (status == 0 && alive != 0) {
+    pre_alive = alive;
 
-	deleteArr(next_arr, &*rows);
-	next_arr = nullptr;
+    std::cout << std::endl;
+    sleep(3);
+    std::system("clear");
+
+    viewGame(next_arr, rows, cols);
+  }
+
+  deleteArr(next_arr, &*rows);
+  next_arr = nullptr;
+
+  return msg[3];
 }
 
 int main() {
   const std::string msg[] = {
-    "Не удалось прочитать файл, проерьте его наличие и праава доступа: ",
+      "Не удалось прочитать файл, проерьте его наличие и праава доступа: ",
   };
-	const char* path = { "./in.txt" };
+  const char *path = {"./in.txt"};
+  std::string game_over = "";
 
-	std::ifstream fin (path);
+  std::ifstream fin(path);
 
-	if (!fin.is_open())
-	{
-		std::cout << msg[0] << path << std::endl;
+  if (!fin.is_open()) {
+    std::cout << msg[0] << path << std::endl;
 
-		return 1;
-	}
+    return 1;
+  }
 
-	int rows_size = 0;
-	int cols_size = 0;
+  int rows_size = 0;
+  int cols_size = 0;
 
-	fin >> rows_size;
-	fin >> cols_size;
+  fin >> rows_size;
+  fin >> cols_size;
 
-	bool** arr = createArr(&rows_size, &cols_size);
+  bool **arr = createArr(&rows_size, &cols_size);
 
-  for (
-    int i = 0,
-    j = 0;
-    (!fin.eof());
-  ) {
+  for (int i = 0, j = 0; (!fin.eof());) {
     fin >> i;
     fin >> j;
     arr[i][j] = true;
   }
 
-  viewGame(arr, &rows_size, &cols_size);
+  game_over = viewGame(arr, &rows_size, &cols_size);
 
-	deleteArr(arr, &rows_size);
-	arr = nullptr;
+  std::cout << game_over << std::endl;
+  
+  deleteArr(arr, &rows_size);
+  arr = nullptr;
 
   return 0;
 }
