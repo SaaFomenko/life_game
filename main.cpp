@@ -26,8 +26,8 @@ void deleteArr(bool** arr, int* rows)
 int deadOrLife(
 	bool** arr,
 	bool** next_arr,
-	int* i,
-	int* j,
+	const int* i,
+	const int* j,
 	int* alive,
 	int* nears
 )
@@ -58,14 +58,15 @@ void lifeOnPoint(
 	int* status
 )
 {
+	int nears = 0;
 	bool check_position[] = {
-		(*i > 0 && i < (*rows - 1)) && (*j > 0 && *j < (*cols -1)),
+		(*i > 0 && *i < *rows - 1) && (*j > 0 && *j < *cols - 1),
 		// top left corner
 		*i == 0 && *j == 0,
 		// top line
 		*i == 0 && *j > 0 && *j < (*cols - 1),
 		// left line
-		*i > 0 && i* < (*rows - 1) && *j == 0,
+		*i > 0 && *i < (*rows - 1) && *j == 0,
 		// bottom left corner
 		*i == (*rows - 1) && *j == 0,
 		// bottom line
@@ -118,7 +119,17 @@ void lifeOnPoint(
 				static_cast<int>(arr[*i][*j - 1]),
 	};
 
-	status = deadOrLife(arr, next_arr, &i, &j, &alive, &nears);
+	const int size = sizeof(check_position)/sizeof(check_position[0]);
+
+	for (int i = 0; i < size; ++i)
+	{
+		if (check_position[i])
+		{
+			nears = nears_in_poin[i];
+		}
+	}
+
+	*status = deadOrLife(arr, next_arr, i, j, alive, &nears);
 }
 
 void viewGame(
@@ -152,16 +163,8 @@ void viewGame(
 		{
 			char s = arr[i][j] ? '*' : '-';
 
-			
-			if (i == 0 && j == (*cols - 1))
-			{
-				nears = static_cast<int>(arr[i][j - 1])
-							+	static_cast<int>(arr[i + 1][j - 1])				
-							+	static_cast<int>(arr[i + 1][j]);
-
-				status = deadOrLife(arr, next_arr, &i, &j, &alive, &nears);
-			}
-
+			lifeOnPoint(arr, next_arr, rows, cols, &i, &j, &alive, &status);
+		}			
 
 		std::cout << std::endl;
 	}
