@@ -8,7 +8,7 @@ bool **createArr(int *rows, int *cols) {
   bool **arr = new bool *[*rows];
 
   for (int i = 0; i < *rows; ++i) {
-    arr[i] = new bool[*cols];
+    arr[i] = new bool[*cols]();
   }
 
   return arr;
@@ -20,6 +20,22 @@ void deleteArr(bool **arr, int *rows) {
   }
 
   delete[] arr;
+}
+
+bool stagLife(bool **arr, bool **next_arr, const int *rows, const int *cols)
+{
+  for (int i = 0; i < *rows; ++i)
+	{
+		for(int j = 0; j < *cols; ++j)
+		{
+			if (arr[i][j] != next_arr[i][j])
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 void deadOrLife(bool **arr, bool **next_arr, const int *i, const int *j,
@@ -72,8 +88,9 @@ std::string viewGame(bool **arr, int *rows, int *cols) {
   };
   static int gen = 0;
   int alive = 0;
+	static bool stag = false;
   int status = 1;
-  static int pre_alive = 0;
+//  static int pre_alive = 0;
 
   bool **next_arr = createArr(rows, cols);
 
@@ -93,21 +110,30 @@ std::string viewGame(bool **arr, int *rows, int *cols) {
     std::cout << std::endl;
   }
 
+/*	if (std::equal(arr, next_arr + sizeof arr / sizeof *arr, next_arr))
+	{
+		stag = true;
+	}
+*/
+
   std::cout << std::endl;
   std::cout << "Поколкние: " << gen << "; "
             << "Количество живых клеток: " << alive << std::endl;
 
-  status = alive == 0 ? 2 : pre_alive == alive ? 1 : 0;
+  //status = alive == 0 ? 2 : pre_alive == alive ? 1 : 0;
+	
+  status = alive == 0 ? 2 : stag ? 1 : 0;
  
   std::cout << msg[status];
 
   if (status == 0 && alive != 0) {
-    pre_alive = alive;
+//    pre_alive = alive;
 
-    std::cout << std::endl;
+		std::cout << std::endl;
     sleep(3);
     std::system("clear");
 
+		stag = stagLife(arr, next_arr, rows, cols);
     viewGame(next_arr, rows, cols);
   }
 
