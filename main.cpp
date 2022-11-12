@@ -14,28 +14,28 @@ bool **createArr(int *rows, int *cols) {
   return arr;
 }
 
+bool stagLife(bool **arr, bool **next_arr, const int *rows,  const int *cols)
+{
+  for (int i = 0; i < *rows; ++i)
+    {
+      for (int j = 0; j < *cols; ++j)
+      {
+        if (arr[i][j] != next_arr[i][j]) 
+        {
+          return false;
+        }
+      }
+    }
+  
+  return true;
+}
+
 void deleteArr(bool **arr, int *rows) {
   for (int i = 0; i < *rows; ++i) {
     delete[] arr[i];
   }
 
   delete[] arr;
-}
-
-bool stagLife(bool **arr, bool **next_arr, const int *rows, const int *cols)
-{
-  for (int i = 0; i < *rows; ++i)
-	{
-		for(int j = 0; j < *cols; ++j)
-		{
-			if (arr[i][j] != next_arr[i][j])
-			{
-				return false;
-			}
-		}
-	}
-
-	return true;
 }
 
 void deadOrLife(bool **arr, bool **next_arr, const int *i, const int *j,
@@ -80,17 +80,23 @@ void lifeOnPoint(bool **arr, bool **next_arr, const int *cols, const int *rows,
 }
 
 std::string viewGame(bool **arr, int *rows, int *cols) {
+
+  int MSG_ALIVE = 0;
+  int MSG_STAG = 1;
+  int MSG_DEAD = 2;
+  int MSG_GAMEOVER = 3;
+  
   const std::string msg[] = {
       "Клетки продолжают жить!",
       "Клетки не меняют состояния. ",
       "Все клетки умерли. ",
       "Игра окончена.",
   };
+
   static int gen = 0;
   int alive = 0;
-	static bool stag = false;
   int status = 1;
-//  static int pre_alive = 0;
+  static bool stag = false;
 
   bool **next_arr = createArr(rows, cols);
 
@@ -110,50 +116,40 @@ std::string viewGame(bool **arr, int *rows, int *cols) {
     std::cout << std::endl;
   }
 
-/*	if (std::equal(arr, next_arr + sizeof arr / sizeof *arr, next_arr))
-	{
-		stag = true;
-	}
-*/
-
   std::cout << std::endl;
-  std::cout << "Поколкние: " << gen << "; "
+  std::cout << "Поколение: " << gen << "; "
             << "Количество живых клеток: " << alive << std::endl;
 
-  //status = alive == 0 ? 2 : pre_alive == alive ? 1 : 0;
-	
-  status = alive == 0 ? 2 : stag ? 1 : 0;
+  status = alive == MSG_ALIVE ? MSG_DEAD : stag ? MSG_STAG : MSG_ALIVE;
  
   std::cout << msg[status];
 
-  if (status == 0 && alive != 0) {
-//    pre_alive = alive;
+  if (status == MSG_ALIVE) {
 
-		std::cout << std::endl;
+    std::cout << std::endl;
     sleep(3);
     std::system("clear");
-
-		stag = stagLife(arr, next_arr, rows, cols);
+    
+    stag = stagLife(arr, next_arr, rows, cols);
+    
     viewGame(next_arr, rows, cols);
   }
 
   deleteArr(next_arr, &*rows);
   next_arr = nullptr;
 
-  return msg[3];
+  return msg[MSG_GAMEOVER];
 }
 
 int main() {
-  const std::string msg[] = {
-      "Не удалось прочитать файл, проерьте его наличие и праава доступа: ",
-  };
+  const std::string msg_err = "Не удалось прочитать файл, проерьте его наличие и праава доступа: ";
   const char *path = {"./in.txt"};
   std::string game_over = "";
 
   std::ifstream fin(path);
 
   if (!fin.is_open()) {
-    std::cout << msg[0] << path << std::endl;
+    std::cout << msg_err << path << std::endl;
 
     return 1;
   }
